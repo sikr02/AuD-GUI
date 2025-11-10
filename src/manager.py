@@ -455,6 +455,28 @@ class Manager:
         logging.debug(f"export: Copy folder \"{self.pdf_dir}\" to \"{export_path}\"")
 
         path_to_status_csv = os.path.join(export_path, "status.csv")
+
+        # Move status.csv one directory up
+        parent_dir = os.path.dirname(export_path)
+        logging.debug(f"export: Move status.csv one directory up to \"{parent_dir}\"")
+        new_status_csv_location = os.path.join(parent_dir, "status.csv")
+        if os.path.isfile(path_to_status_csv):
+            # Check if target file already exists
+            if os.path.exists(new_status_csv_location):
+                logging.warning(f"export: Ziel-Datei \"{new_status_csv_location}\" existiert bereits und wird überschrieben")
+                try:
+                    os.remove(new_status_csv_location)
+                except OSError:
+                    logging.exception("export: Konnte bestehende status.csv oben nicht löschen")
+            try:
+                shutil.move(path_to_status_csv, new_status_csv_location)
+                logging.debug(f"export: status.csv nach oben verschoben: \"{new_status_csv_location}\"")
+                path_to_status_csv = new_status_csv_location
+            except OSError:
+                logging.exception("export: Verschieben von status.csv fehlgeschlagen")
+        else:
+            logging.error(f"export: status.csv nicht im kopierten Ordner gefunden: \"{path_to_status_csv}\"")
+
         try:
             logging.debug(f"export: Try to open \"{path_to_status_csv}\"")
             with open(path_to_status_csv, encoding="utf-8", errors="backslashreplace") as input_fd:
