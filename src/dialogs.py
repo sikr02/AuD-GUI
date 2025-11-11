@@ -634,9 +634,8 @@ class ExportDialog(tk.Toplevel):
 
         # Info label
         self.info_label = tk.Label(self,
-                                   text="INFO:\nUm die Korrektur in StudOn hochladen zu können, "
-                                        "benötigt der Ordner einen speziellen Namen.\nDieser kann auf StudOn "
-                                        "heruntergeladen werden und hier eingefügt werden.",
+                                   text="INFO:\nDu kannst hier einen eigenen Namen für den Exportordner angeben.\n"
+                                        "Lasse das Feld leer, um den Standardnamen zu verwenden.",
                                    justify="left",
                                    anchor="w",
                                    bg=g.bg_color)
