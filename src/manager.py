@@ -420,11 +420,11 @@ class Manager:
 
     def export(self, zip_name: str):
         logging.debug("manager.py: export")
+        # If no zip_name is given, use default name with date and time
         if zip_name == "":
-            messagebox.showerror(title="AuD-GUI :D - Fehler!",
-                                 message="Name des Export-Ordners darf nicht leer sein!")
-            logging.error("export: Zip-folder name empty")
-            return
+            zip_name = f"AuD_Export_{str(pd.Timestamp.now().strftime('%Y-%m-%d_%H-%M'))}"
+            logging.debug(f"export: No zip name given, using default name \"{zip_name}\"")
+
         res = []
         for s in self.states:
             points, feedback = s.export(self.settings.compile_error_annotation, self.settings.plagiat_annotation)
@@ -463,19 +463,19 @@ class Manager:
         if os.path.isfile(path_to_status_csv):
             # Check if target file already exists
             if os.path.exists(new_status_csv_location):
-                logging.warning(f"export: Ziel-Datei \"{new_status_csv_location}\" existiert bereits und wird überschrieben")
+                logging.warning(f"export: Target File \"{new_status_csv_location}\" already exists and will be overwritten")
                 try:
                     os.remove(new_status_csv_location)
                 except OSError:
-                    logging.exception("export: Konnte bestehende status.csv oben nicht löschen")
+                    logging.exception("export: Could not remove existing status.csv file")
             try:
                 shutil.move(path_to_status_csv, new_status_csv_location)
-                logging.debug(f"export: status.csv nach oben verschoben: \"{new_status_csv_location}\"")
+                logging.debug(f"export: status.csv moved to \"{new_status_csv_location}\"")
                 path_to_status_csv = new_status_csv_location
             except OSError:
-                logging.exception("export: Verschieben von status.csv fehlgeschlagen")
+                logging.exception("export: Could not move status.csv file")
         else:
-            logging.error(f"export: status.csv nicht im kopierten Ordner gefunden: \"{path_to_status_csv}\"")
+            logging.error(f"export: status.csv not found in \"{path_to_status_csv}\"")
 
         try:
             logging.debug(f"export: Try to open \"{path_to_status_csv}\"")
@@ -495,12 +495,70 @@ class Manager:
 
         for team_id, team_points, team_comment in res:
 
-            # Remove all files that are not "Korrektur.pdf"
+            #  Find team folder and rename it to "Team_<team_id>"
             team_folder = [t for t in os.listdir(export_path) if team_id in t][0]
-            for file in os.listdir(os.path.join(export_path, team_folder)):
-                if file != "Korrektur.pdf":
-                    os.remove(os.path.join(export_path, team_folder, file))
-                    logging.debug(f"export: Remove \"{os.path.join(export_path, team_folder, file)}\"")
+            old_team_path = os.path.join(export_path, team_folder)
+            new_team_folder_name = f"Team_{team_id}"
+            new_team_path = os.path.join(export_path, new_team_folder_name)
+
+            if team_folder != new_team_folder_name:
+                try:
+                    os.rename(old_team_path, new_team_path)
+                    logging.debug(f"export: Rename team folder '{team_folder}' -> '{new_team_folder_name}'")
+                except OSError:
+                    logging.exception(
+                        f"export: Could not rename team folder '{old_team_path}' to '{new_team_path}'")
+                    new_team_path = old_team_path # Fallback
+            else:
+                new_team_path = old_team_path
+
+            # Create subfolder "Korrekturen" if not existent and move Korrektur.pdf there
+            korrekturen_path = os.path.join(new_team_path, "Korrekturen")
+            os.makedirs(korrekturen_path, exist_ok=True)
+
+            src_pdf_in_root = os.path.join(new_team_path, "Korrektur.pdf")
+            dst_pdf_in_korr = os.path.join(korrekturen_path, "Korrektur.pdf")
+
+            if os.path.isfile(src_pdf_in_root):
+                try:
+                    # If target file already exists, remove it first
+                    if os.path.exists(dst_pdf_in_korr):
+                        os.remove(dst_pdf_in_korr)
+                    shutil.move(src_pdf_in_root, dst_pdf_in_korr)
+                    logging.debug(f"export: Move Korrektur.pdf to '{dst_pdf_in_korr}'")
+                except OSError:
+                    logging.exception("export: Could not move Korrektur.pdf into 'Korrekturen' folder")
+            else:
+                # If Korrektur.pdf is not found, log a warning
+                if not os.path.isfile(dst_pdf_in_korr):
+                    logging.warning(
+                        f"export: Korrektur.pdf not found for team {team_id} at expected location '{src_pdf_in_root}'")
+
+            # Remove all other files and folders in the team folder except the "Korrekturen" folder
+            for entry in os.listdir(new_team_path):
+                if entry != "Korrekturen":
+                    p = os.path.join(new_team_path, entry)
+                    try:
+                        if os.path.isdir(p):
+                            shutil.rmtree(p)
+                        else:
+                            os.remove(p)
+                        logging.debug(f"export: Remove '{p}'")
+                    except OSError:
+                        logging.exception(f"export: Could not remove '{p}'")
+
+            # Clean up Korrekturen folder (remove everything except Korrektur.pdf) just in case
+            for entry in os.listdir(korrekturen_path):
+                if entry != "Korrektur.pdf":
+                    p = os.path.join(korrekturen_path, entry)
+                    try:
+                        if os.path.isdir(p):
+                            shutil.rmtree(p)
+                        else:
+                            os.remove(p)
+                        logging.debug(f"export: Remove '{p}' from Korrekturen folder")
+                    except OSError:
+                        logging.exception(f"export: Could not remove '{p}' from Korrekturen folder")
 
             # Set score
             status_df.loc[status_df[id_col] == team_id, "mark"] = team_points
