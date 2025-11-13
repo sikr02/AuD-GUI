@@ -250,8 +250,13 @@ class Manager:
         logging.debug("manager.py: open_pdf")
         logging.debug(f"open_pdf: Open PDF for team {self.team_state.id} (Location: \"{self.team_state.pdf}\")")
         # Nice extra functionality to reduce pain while correcting ;)
-        if platform.system() == "Darwin":
+        if platform.system() == "Darwin": #macOS
             subprocess.Popen(["open", self.team_state.pdf])
+        # Added accommodation for Linux and Windows
+        elif platform.system() == "Windows":
+            subprocess.Popen(["start", "", self.team_state.pdf], shell=True)
+        elif platform.system() == "Linux":
+            subprocess.Popen(["xdg-open", self.team_state.pdf])
         else:
             subprocess.Popen([self.team_state.pdf], shell=True)
 
@@ -262,8 +267,13 @@ class Manager:
                 logging.debug("manager.py: open_code (multiple files)")
                 logging.debug(f"open_code: Open code file for team {self.team_state.id} (Location: \"{code_file}\")")
                 # Open code in default editor for .java files
-                if platform.system() == "Darwin":
+                if platform.system() == "Darwin": #macOS
                     subprocess.Popen(["open", code_file])
+                # Added accommodation for Linux and Windows
+                elif platform.system() == "Windows":
+                    subprocess.Popen(["start", "", code_file], shell=True)
+                elif platform.system() == "Linux":
+                    subprocess.Popen(["xdg-open", code_file])
                 else:
                     subprocess.Popen([code_file], shell=True)
         else:
@@ -271,8 +281,13 @@ class Manager:
             logging.debug(
                 f"open_code: Open code for team {self.team_state.id} (Location: \"{self.team_state.code[0]}\")")
             # Open code in default editor for .java files
-            if platform.system() == "Darwin":
+            if platform.system() == "Darwin": #macOS
                 subprocess.Popen(["open", self.team_state.code[0]])
+            # Added accommodation for Linux and Windows
+            elif platform.system() == "Windows":
+                subprocess.Popen(["start", "", self.team_state.code[0]], shell=True)
+            elif platform.system() == "Linux":
+                subprocess.Popen(["xdg-open", self.team_state.code[0]])
             else:
                 subprocess.Popen([self.team_state.code[0]], shell=True)
 
@@ -587,6 +602,20 @@ class Manager:
                                                   f"{os.path.join(self.path_to_output, self.dir_name, zip_name)}.zip"
                                                   f"\" anzeigen?")
         if open_folder:
-            os.startfile(os.path.join(self.path_to_output, self.dir_name))
+            # os.startfile(os.path.join(self.path_to_output, self.dir_name))
+            # this failed on linux -> fixed it with:
+            folder_path = os.path.join(self.path_to_output, self.dir_name)
+            try:
+                if platform.system() == 'Darwin':  # macOS
+                    subprocess.call(['open', folder_path])
+                elif platform.system() == 'Windows':
+                    os.startfile(folder_path)
+                elif platform.system() == 'Linux':
+                    subprocess.call(['xdg-open', folder_path])
+                else:
+                    logging.warning(f"export: Cannot open folder automatically on this platform.")
+            except Exception as e:
+                logging.error(f"export: Failed to open folder {folder_path}: {e}")
+
             logging.debug(f"export: Open in file explorer: "
                           f"\"{os.path.join(self.path_to_output, self.dir_name, zip_name)}.zip\"")
