@@ -17,7 +17,7 @@ class ImportDialog(tk.Toplevel):
                  import_func):
         super().__init__(master=master)
         self.title("AuD-GUI :D - Abgaben importieren")
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.focus_set()
         self.g = g
         self.allow_folders = allow_folders
@@ -312,7 +312,7 @@ class GraphicsDialog(tk.Toplevel):
                  save_func):
         super().__init__(master=master)
         self.title("AuD-GUI :D - Grafik-Einstellungen")
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.focus_set()
         self.g = g
 
@@ -590,7 +590,7 @@ class FontsDialog(tk.Toplevel):
                  g: Graphics):
         super().__init__(master=master)
         self.title("AuD-GUI :D - Schriftarten")
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.focus_set()
         self.config(bg=g.bg_color)
 
@@ -612,7 +612,7 @@ class ExportDialog(tk.Toplevel):
                  export_func):
         super().__init__(master=master)
         self.title("AuD-GUI :D - Korrektur exportieren")
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.focus_set()
 
         # STATES
