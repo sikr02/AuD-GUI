@@ -183,7 +183,9 @@ class SettingsDialog(tk.Toplevel):
                  save_func):
         super().__init__(master=master)
         self.title("AuD-GUI :D - Kommentar-Einstellungen")
-        self.resizable(False, False)
+        self.resizable(True, True)
+        self.minsize(500, 300)
+        self.geometry("600x700")
         self.focus_set()
         self.g = g
 
@@ -197,86 +199,82 @@ class SettingsDialog(tk.Toplevel):
         # WIDGETS
         self.config(bg=self.g.bg_color)
 
+        # Scrollable frame
+        self.scroll = DoubleScrolledFrame(self)
+        self.scroll.set_color(self.g.bg_color)
+        self.scroll.pack(fill="both", expand=True)
+
         # ID Key comment
-        self.id_key_label = tk.Label(self,
+        self.id_key_label = tk.Label(self.scroll,
                                      text="Key für automatische Team-IDs:",
                                      anchor="w",
                                      bg=self.g.bg_color,
                                      font=(self.g.header_font, 14))
         self.id_key_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
         # String box
-        self.id_key_entry = tk.Entry(self, width=50)
+        self.id_key_entry = tk.Entry(self.scroll, width=50)
         self.id_key_entry.insert(0, self.id_key)
         self.id_key_entry.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
-        self.id_key_info_label = tk.Label(self,
+        self.id_key_info_label = tk.Label(self.scroll,
                                           text="INFO:\nDieser Key wird für die automatische Zuordnung der Team-IDs "
                                                "benötigt.",
                                           anchor="w",
                                           justify="left",
                                           bg=self.g.bg_color)
         self.id_key_info_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
         # Compile Error comment
-        self.compile_error_label = tk.Label(self,
+        self.compile_error_label = tk.Label(self.scroll,
                                             text="Compile-Error Kommentar:",
                                             anchor="w",
                                             bg=self.g.bg_color,
                                             font=(self.g.header_font, 14))
         self.compile_error_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
         # String box
-        self.ce_box = tk.Text(self, width=50, height=5)
+        self.ce_box = tk.Text(self.scroll, width=50, height=5)
         self.ce_box.insert(tk.END, self.compile_error)
         self.ce_box.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
-        self.compile_error_info_label = tk.Label(self,
+        self.compile_error_info_label = tk.Label(self.scroll,
                                                  text="INFO:\nDieser Kommentar wird bei jedem Compile-Error eingefügt.",
                                                  anchor="w",
                                                  justify="left",
                                                  bg=self.g.bg_color)
         self.compile_error_info_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
         # Plagiat comment
-        self.plag_label = tk.Label(self,
+        self.plag_label = tk.Label(self.scroll,
                                    text="Plagiat Kommentar:",
                                    anchor="w",
                                    bg=self.g.bg_color,
                                    font=(self.g.header_font, 14))
         self.plag_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
         # String box
-        self.p_box = tk.Text(self, width=50, height=5)
+        self.p_box = tk.Text(self.scroll, width=50, height=5)
         self.p_box.insert(tk.END, self.plagiat)
         self.p_box.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
-        self.plag_info_label = tk.Label(self,
+        self.plag_info_label = tk.Label(self.scroll,
                                         text="INFO:\nDieser Kommentar wird bei jedem Plagiat eingefügt.",
                                         anchor="w",
                                         justify="left",
                                         bg=self.g.bg_color)
         self.plag_info_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
         # Input label
-        self.input_label = tk.Label(self,
+        self.input_label = tk.Label(self.scroll,
                                     text="Persönlicher Kommentar:",
                                     anchor="w",
                                     bg=self.g.bg_color,
                                     font=(self.g.header_font, 14))
         self.input_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
         # String box
-        self.id_box = tk.Text(self, width=50, height=5)
+        self.id_box = tk.Text(self.scroll, width=50, height=5)
         self.id_box.insert(tk.END, self.name)
         self.id_box.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
-        self.info_label = tk.Label(self,
+        self.info_label = tk.Label(self.scroll,
                                    text="INFO:\nDieser Kommentar wird unter jedem Comment angefügt.",
                                    anchor="w",
                                    justify="left",
                                    bg=self.g.bg_color)
         self.info_label.pack(fill="x", side="top", anchor="w", padx=10, pady=5)
-
         # Termination frame
-        self.terminate_frame = tk.Frame(self, bg=self.g.bg_color)
+        self.terminate_frame = tk.Frame(self.scroll, bg=self.g.bg_color)
 
         # Abort button
         self.abort_button = tk.Button(self.terminate_frame,
