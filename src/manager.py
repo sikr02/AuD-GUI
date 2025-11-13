@@ -418,12 +418,16 @@ class Manager:
         self.graphics.save()
         logging.debug(f"save_graphics: Saved new graphics settings")
 
-    def export(self, zip_name: str):
+    def export(self, folder_name: str = None):
         logging.debug("manager.py: export")
+        if folder_name == "":
+            messagebox.showerror(title="AuD-GUI :D - Fehler!",
+                                 message="Name des Export-Ordners darf nicht leer sein!")
+            logging.error("export: Zip-folder name empty")
+            return
         # If no zip_name is given, use default name with date and time
-        if zip_name == "":
-            zip_name = f"AuD_Export_{str(pd.Timestamp.now().strftime('%Y-%m-%d_%H-%M'))}"
-            logging.debug(f"export: No zip name given, using default name \"{zip_name}\"")
+        zip_name = f"AuD_Export_{str(pd.Timestamp.now().strftime('%Y-%m-%d_%H-%M'))}"
+        logging.debug(f"export: ZIP-name \"{zip_name}\"")
 
         res = []
         for s in self.states:
@@ -432,7 +436,7 @@ class Manager:
             res.append((str(s.id), points, feedback))  # Add ID, total points, comment feedback
         logging.debug("export: Created export list successfully")
 
-        export_path = os.path.join(self.path_to_output, self.dir_name, zip_name, zip_name)
+        export_path = os.path.join(self.path_to_output, self.dir_name, zip_name, folder_name)
         logging.debug(f"Try to export to \"{export_path}\"")
 
         # Check if directory already exist
